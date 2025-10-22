@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Timetable Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6C63FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Timetable Tracker">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4A44B5;
+            --accent: #FF6584;
+            --success: #36D1DC;
+            --danger: #FF5E62;
+            --light: #F8F9FF;
+            --dark: #2D2B55;
+            --weekday: #5A54D6;
+            --weekend: #8B85FF;
+            --completed: #00D2AA;
+            --failed: #FF5E62;
+            --pending: #FFB347;
+            --card-bg: #ffffff;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --gratitude: #FF9A8B;
+            --money: #FFD166;
+            --gradient: linear-gradient(135deg, #6C63FF 0%, #36D1DC 100%);
+            --dark-gradient: linear-gradient(135deg, #4A44B5 0%, #2D2B55 100%);
+            --study-hours: #2E7D32;
+            --routine: #5D4037;
+            --college: #1565C0;
+            --break: #6A1B9A;
+            --exercise: #C62828;
+            --financial: #FF8F00;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.3);
+        }
+
+        body {
+            background: var(--gradient);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 15px;
+            background-attachment: fixed;
+            /* Prevent zoom on input focus for mobile */
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .quote-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .author {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .gratitude-activity {
+            background: rgba(255, 154, 139, 0.15);
+            border-left: 4px solid var(--gratitude);
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #D84315;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .money-activity {
+            background: rgba(255, 209, 102, 0.2);
+            border-left: 4px solid var(--money);
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #E65100;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+            background: var(--dark-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .date-range {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .schedule-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .schedule-btn {
+            background: var(--glass-bg);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            flex: 1;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .schedule-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(108, 99, 255, 0.3);
+        }
+
+        .schedule-btn:hover:not(.active) {
+            background: #e9ecef;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timetable-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timetable-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(108, 99, 255, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .weekday-title {
+            color: var(--weekday);
+            font-size: 1.2rem;
+        }
+
+        .weekend-title {
+            color: var(--weekend);
+            font-size: 1.2rem;
+        }
+
+        .total-hours {
+            background: var(--light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.1);
+        }
+
+        th {
+            background-color: rgba(108, 99, 255, 0.05);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .study-hours {
+            font-weight: bold;
+            color: var(--study-hours);
+            font-size: 0.9rem;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            color: var(--dark);
+            width: 25%;
+        }
+
+        .activity-cell {
+            width: 55%;
+        }
+
+        .hours-cell {
+            width: 20%;
+            text-align: center;
+        }
+
+        .activity-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .type-study {
+            background-color: rgba(46, 125, 50, 0.1);
+            color: var(--study-hours);
+            border: 1px solid rgba(46, 125, 50, 0.3);
+        }
+
+        .type-routine {
+            background-color: rgba(93, 64, 55, 0.1);
+            color: var(--routine);
+            border: 1px solid rgba(93, 64, 55, 0.3);
+        }
+
+        .type-college {
+            background-color: rgba(21, 101, 192, 0.1);
+            color: var(--college);
+            border: 1px solid rgba(21, 101, 192, 0.3);
+        }
+
+        .type-break {
+            background-color: rgba(106, 27, 154, 0.1);
+            color: var(--break);
+            border: 1px solid rgba(106, 27, 154, 0.3);
+        }
+
+        .type-exercise {
+            background-color: rgba(198, 40, 40, 0.1);
+            color: var(--exercise);
+            border: 1px solid rgba(198, 40, 40, 0.3);
+        }
+
+        .type-financial {
+            background-color: rgba(255, 143, 0, 0.1);
+            color: var(--financial);
+            border: 1px solid rgba(255, 143, 0, 0.3);
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: rgba(108, 99, 255, 0.05);
+            padding: 12px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(108, 99, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--dark);
+            margin-top: 5px;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .task-tracker {
+            margin-top: 15px;
+        }
+
+        .current-date {
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1rem;
+            border: 1px solid rgba(108, 99, 255, 0.1);
+        }
+
+        .task-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-bottom: 1px solid rgba(108, 99, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            background: rgba(248, 249, 255, 0.5);
+            gap: 10px;
+        }
+
+        .task-item:hover {
+            background: rgba(108, 99, 255, 0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-item.completed {
+            background: rgba(0, 210, 170, 0.1);
+            border-left: 4px solid var(--completed);
+        }
+
+        .task-item.failed {
+            background: rgba(255, 94, 98, 0.1);
+            border-left: 4px solid var(--failed);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .task-name {
+            flex-grow: 1;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .task-time {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 600;
+            background: rgba(108, 99, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            font-size: 0.85rem;
+            /* Better touch targets for mobile */
+            min-height: 44px;
+        }
+
+        .btn-pass {
+            background: var(--completed);
+            color: white;
+        }
+
+        .btn-fail {
+            background: var(--failed);
+            color: white;
+        }
+
+        .btn-pass.active {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--completed);
+            transform: scale(1.05);
+        }
+
+        .btn-fail.active {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--failed);
+            transform: scale(1.05);
+        }
+
+        .btn-track {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-submit {
+            background: var(--secondary);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .calendar-view {
+            margin-top: 15px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 15px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px 4px;
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--primary);
+        }
+
+        .calendar-day {
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            background: rgba(248, 249, 255, 0.7);
+            position: relative;
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .calendar-day.pending {
+            background: var(--pending);
+            color: white;
+        }
+
+        .calendar-day.completed {
+            background: var(--completed);
+            color: white;
+        }
+
+        .calendar-day.failed {
+            background: var(--failed);
+            color: white;
+        }
+
+        .calendar-day:hover:not(.empty) {
+            transform: scale(1.05);
+        }
+
+        .motivation {
+            text-align: center;
+            font-style: italic;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: 15px;
+            color: var(--secondary);
+            font-size: 0.85rem;
+            border: 1px solid rgba(108, 99, 255, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            color: white;
+            padding: 15px;
+            font-size: 0.85rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .completion-status {
+            font-size: 0.85rem;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(255, 179, 71, 0.1);
+            color: #E65100;
+            border: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .status-completed {
+            background: rgba(0, 210, 170, 0.1);
+            color: #00695C;
+            border: 1px solid rgba(0, 210, 170, 0.3);
+        }
+
+        /* Install prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .install-prompt.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { bottom: -100px; opacity: 0; }
+            to { bottom: 20px; opacity: 1; }
+        }
+
+        .install-prompt-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .install-prompt-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .install-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .install-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .install-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 350px;
+                gap: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .date-range {
+                font-size: 1.1rem;
+            }
+            
+            .task-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            .task-header {
+                flex: 1;
+                align-items: center;
+            }
+            
+            .task-actions {
+                justify-content: flex-end;
+                width: auto;
+            }
+            
+            .btn {
+                min-width: 90px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .schedule-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .schedule-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .section-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .task-actions {
+                width: 100%;
+            }
+            
+            .btn {
+                flex: 1;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+        }
+
+        /* Prevent text selection for better mobile experience */
+        .btn, .schedule-btn, .calendar-day {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="quote-section">
+            <div class="quote">"STAY CONSISTENT, STAY FOCUSED AND DO YOUR HARDWORK."</div>
+            <div class="author">AAI 💗 BABA</div>
+        </div>
+
+        <header>
+            <h1><i class="fas fa-calendar-alt"></i> Academic Timetable</h1>
+            <p class="date-range">From 23/10/2025 to 24/12/2025</p>
+        </header>
+
+        <div class="schedule-selector">
+            <button class="schedule-btn active" id="weekday-btn" onclick="showSchedule('weekday')">
+                <i class="fas fa-building"></i> Weekday Schedule
+            </button>
+            <button class="schedule-btn" id="weekend-btn" onclick="showSchedule('weekend')">
+                <i class="fas fa-home"></i> Weekend Schedule
+            </button>
+        </div>
+
+        <div class="main-content">
+            <div class="left-column">
+                <div class="timetable-section" id="weekday-schedule">
+                    <div class="section-title">
+                        <h2 class="weekday-title"><i class="fas fa-building"></i> Weekdays Schedule</h2>
+                        <span class="total-hours">Total: 8.75 hrs/day</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="time-cell">Time</th>
+                                <th class="activity-cell">Activity / Study Focus</th>
+                                <th class="hours-cell">Study Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="time-cell">4:00 AM – 5:00 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-routine">Routine</span>
+                                    Wake up, ready, bath, meditation
+                                    <div class="gratitude-activity">🙏 Gratitude to Universe</div>
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">5:00 AM – 9:00 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Morning Study Session
+                                </td>
+                                <td class="hours-cell study-hours">4 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">9:00 AM – 5:00 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-college">College</span>
+                                    College
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">5:00 PM – 8:30 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Evening Study Session
+                                </td>
+                                <td class="hours-cell study-hours">3.5 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">8:30 PM – 9:45 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-break">Break</span>
+                                    Dinner / Relax
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">9:45 PM – 11:00 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Night Study Session
+                                </td>
+                                <td class="hours-cell study-hours">1.25 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">11:00 PM – 4:00 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-routine">Routine</span>
+                                    Sleep
+                                    <div class="gratitude-activity">🙏 Gratitude to Universe</div>
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="timetable-section" id="weekend-schedule" style="display: none;">
+                    <div class="section-title">
+                        <h2 class="weekend-title"><i class="fas fa-home"></i> Weekends / Holidays – Academic Focus</h2>
+                        <span class="total-hours">Total: 12.75 hrs/day</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="time-cell">Time</th>
+                                <th class="activity-cell">Activity / Study Focus</th>
+                                <th class="hours-cell">Study Hours</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="time-cell">5:00 AM – 5:45 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-routine">Routine</span>
+                                    Wake up, ready, bath, meditation
+                                    <div class="gratitude-activity">🙏 Gratitude to Universe</div>
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">5:45 AM – 6:20 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-exercise">Exercise</span>
+                                    Morning Walk
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">6:30 AM – 1:00 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Study Session 1
+                                </td>
+                                <td class="hours-cell study-hours">6.5 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">1:00 PM – 2:20 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-break">Break</span>
+                                    Lunch / Relax
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">2:30 PM – 5:00 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Study Session 2
+                                </td>
+                                <td class="hours-cell study-hours">2.5 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">5:00 PM – 5:30 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-break">Break</span>
+                                    Break
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">6:00 PM – 8:30 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Study Session 3
+                                </td>
+                                <td class="hours-cell study-hours">2.5 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">8:30 PM – 9:45 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-break">Break</span>
+                                    Dinner / Relax
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">9:45 PM – 11:00 PM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-study">Study</span>
+                                    Study (DSA)
+                                </td>
+                                <td class="hours-cell study-hours">1.25 hrs</td>
+                            </tr>
+                            <tr>
+                                <td class="time-cell">11:00 PM – 4:00 AM</td>
+                                <td class="activity-cell">
+                                    <span class="activity-type type-routine">Routine</span>
+                                    Sleep
+                                    <div class="gratitude-activity">🙏 Gratitude to Universe</div>
+                                </td>
+                                <td class="hours-cell">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h2><i class="fas fa-chart-line"></i> Study Statistics</h2>
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-days">62</div>
+                            <div class="stat-label">Total Days</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">8.75</div>
+                            <div class="stat-label">Weekday Hours</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">12.75</div>
+                            <div class="stat-label">Weekend Hours</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-hours">645.5</div>
+                            <div class="stat-label">Total Hours</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <p>Study Progress: <span id="days-completed">0</span>/<span id="total-days-progress">62</span> days</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-tasks"></i> Daily Task Tracker</h2>
+                    <div class="current-date" id="current-date">Today: Loading...</div>
+                    
+                    <div id="completion-status" class="completion-status status-pending">
+                        <i class="fas fa-clock"></i> Tasks for today: Not started
+                    </div>
+                    
+                    <div class="task-tracker" id="task-tracker">
+                        <!-- Tasks will be populated by JavaScript -->
+                    </div>
+                    
+                    <button class="btn btn-submit" id="submit-day" onclick="submitDay()">
+                        <i class="fas fa-check-circle"></i> Submit Today's Progress
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-calendar-week"></i> Progress Calendar</h2>
+                    <div class="calendar-view" id="calendar-view">
+                        <div class="calendar" id="calendar">
+                            <!-- Calendar will be populated by JavaScript -->
+                        </div>
+                        <div class="legend" style="margin-top: 15px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <div style="width: 15px; height: 15px; background: var(--completed); border-radius: 3px;"></div>
+                                <span>Completed</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <div style="width: 15px; height: 15px; background: var(--failed); border-radius: 3px;"></div>
+                                <span>Failed</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <div style="width: 15px; height: 15px; background: var(--pending); border-radius: 3px;"></div>
+                                <span>Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Stay focused and consistent. You've got this! 💪</p>
+            <p>NO extra money wastage - Stay disciplined with your budget!</p>
+        </footer>
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="install-prompt">
+        <div class="install-prompt-content">
+            <p>Install Academic Timetable Tracker for easy access?</p>
+            <div class="install-prompt-buttons">
+                <button class="install-btn install-primary" id="install-btn">Install</button>
+                <button class="install-btn install-secondary" id="dismiss-btn">Not Now</button>
+            </div>
+        </div>
+    </div>
+
+   <script>
+    // Initialize data structures
+    let taskStatus = {};
+    let calendarData = {};
+    const startDate = new Date('2025-10-23');
+    const endDate = new Date('2025-12-24');
+    const today = new Date();
+
+    // Task definitions for weekdays and weekends
+    const weekdayTasks = [
+        { name: "Wake up, ready, bath, meditation", time: "4:00 AM – 5:00 AM", type: "routine", hasGratitude: true },
+        { name: "Morning Study Session", time: "5:00 AM – 9:00 AM", type: "study", hours: 4 },
+        { name: "College", time: "9:00 AM – 5:00 PM", type: "college" },
+        { name: "Evening Study Session", time: "5:00 PM – 8:30 PM", type: "study", hours: 3.5 },
+        { name: "Dinner / Relax", time: "8:30 PM – 9:45 PM", type: "break" },
+        { name: "Night Study Session", time: "9:45 PM – 11:00 PM", type: "study", hours: 1.25 },
+        { name: "NO Extra Money Wastage", time: "All Day", type: "financial", hasMoney: true },
+        { name: "Sleep", time: "11:00 PM – 4:00 AM", type: "routine", hasGratitude: true }
+    ];
+
+    const weekendTasks = [
+        { name: "Wake up, ready, bath, meditation", time: "5:00 AM – 5:45 AM", type: "routine", hasGratitude: true },
+        { name: "Morning Walk", time: "5:45 AM – 6:20 AM", type: "exercise" },
+        { name: "Study Session 1", time: "6:30 AM – 1:00 PM", type: "study", hours: 6.5 },
+        { name: "Lunch / Relax", time: "1:00 PM – 2:20 PM", type: "break" },
+        { name: "Study Session 2", time: "2:30 PM – 5:00 PM", type: "study", hours: 2.5 },
+        { name: "Break", time: "5:00 PM – 5:30 PM", type: "break" },
+        { name: "Study Session 3", time: "6:00 PM – 8:30 PM", type: "study", hours: 2.5 },
+        { name: "Dinner / Relax", time: "8:30 PM – 9:45 PM", type: "break" },
+        { name: "Study (DSA)", time: "9:45 PM – 11:00 PM", type: "study", hours: 1.25 },
+        { name: "NO Extra Money Wastage", time: "All Day", type: "financial", hasMoney: true },
+        { name: "Sleep", time: "11:00 PM – 4:00 AM", type: "routine", hasGratitude: true }
+    ];
+
+    // Track current schedule type
+    let currentScheduleType = 'weekday';
+
+    // PWA variables
+    let deferredPrompt;
+
+    // Load data from localStorage
+    function loadData() {
+        const savedTaskStatus = localStorage.getItem('academicTaskStatus');
+        const savedCalendarData = localStorage.getItem('academicCalendarData');
+        
+        if (savedTaskStatus) {
+            taskStatus = JSON.parse(savedTaskStatus);
+        } else {
+            taskStatus = {};
+        }
+        
+        if (savedCalendarData) {
+            calendarData = JSON.parse(savedCalendarData);
+        } else {
+            calendarData = {};
+        }
+    }
+
+    // Save data to localStorage
+    function saveData() {
+        localStorage.setItem('academicTaskStatus', JSON.stringify(taskStatus));
+        localStorage.setItem('academicCalendarData', JSON.stringify(calendarData));
+    }
+
+    // Initialize the application
+    function init() {
+        loadData();
+        updateDateDisplay();
+        renderTasks();
+        updateStats();
+        updateCalendar();
+        updateCompletionStatus();
+        setupPWA();
+    }
+
+    // Setup PWA functionality
+    function setupPWA() {
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(function(registration) {
+                        console.log('Service Worker registered successfully with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker registration failed: ', error);
+                    });
+            });
+        }
+
+        // Listen for before install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA install prompt available');
+            showInstallPrompt();
+        });
+
+        // Handle install button click
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                hideInstallPrompt();
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+            }
+        });
+
+        // Handle dismiss button click
+        document.getElementById('dismiss-btn').addEventListener('click', hideInstallPrompt);
+
+        // Listen for app installed event
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            console.log('PWA was installed successfully!');
+            hideInstallPrompt();
+        });
+    }
+
+    // Show install prompt
+    function showInstallPrompt() {
+        const installPrompt = document.getElementById('install-prompt');
+        installPrompt.classList.add('show');
+    }
+
+    // Hide install prompt
+    function hideInstallPrompt() {
+        const installPrompt = document.getElementById('install-prompt');
+        installPrompt.classList.remove('show');
+    }
+
+    // Update the current date display
+    function updateDateDisplay() {
+        const dateElement = document.getElementById('current-date');
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateElement.textContent = `Today: ${today.toLocaleDateString('en-US', options)}`;
+    }
+
+    // Show weekday or weekend schedule
+    function showSchedule(type) {
+        const weekdaySchedule = document.getElementById('weekday-schedule');
+        const weekendSchedule = document.getElementById('weekend-schedule');
+        const weekdayBtn = document.getElementById('weekday-btn');
+        const weekendBtn = document.getElementById('weekend-btn');
+        
+        if (type === 'weekday') {
+            weekdaySchedule.style.display = 'block';
+            weekendSchedule.style.display = 'none';
+            weekdayBtn.classList.add('active');
+            weekendBtn.classList.remove('active');
+            currentScheduleType = 'weekday';
+        } else {
+            weekdaySchedule.style.display = 'none';
+            weekendSchedule.style.display = 'block';
+            weekdayBtn.classList.remove('active');
+            weekendBtn.classList.add('active');
+            currentScheduleType = 'weekend';
+        }
+        
+        renderTasks();
+    }
+
+    // Update completion status
+    function updateCompletionStatus() {
+        const todayKey = today.toDateString();
+        const statusElement = document.getElementById('completion-status');
+        
+        if (!taskStatus[todayKey]) {
+            statusElement.innerHTML = '<i class="fas fa-clock"></i> Tasks for today: Not started';
+            statusElement.className = 'completion-status status-pending';
+            return;
+        }
+        
+        let completedCount = 0;
+        let totalCount = 0;
+        let anyFailed = false;
+        
+        for (const task in taskStatus[todayKey]) {
+            totalCount++;
+            if (taskStatus[todayKey][task] === 'completed') {
+                completedCount++;
+            } else if (taskStatus[todayKey][task] === 'failed') {
+                anyFailed = true;
+            }
+        }
+        
+        if (completedCount === totalCount) {
+            statusElement.innerHTML = `<i class="fas fa-check-circle"></i> All tasks completed! (${completedCount}/${totalCount})`;
+            statusElement.className = 'completion-status status-completed';
+        } else if (anyFailed) {
+            statusElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Some tasks not completed (${completedCount}/${totalCount})`;
+            statusElement.className = 'completion-status status-pending';
+        } else {
+            statusElement.innerHTML = `<i class="fas fa-spinner"></i> In progress (${completedCount}/${totalCount})`;
+            statusElement.className = 'completion-status status-pending';
+        }
+    }
+
+    // Render tasks based on current schedule type
+    function renderTasks() {
+        const taskTracker = document.getElementById('task-tracker');
+        taskTracker.innerHTML = '';
+        
+        const tasks = currentScheduleType === 'weekday' ? weekdayTasks : weekendTasks;
+        const todayKey = today.toDateString();
+        
+        if (!taskStatus[todayKey]) {
+            taskStatus[todayKey] = {};
+            tasks.forEach(task => {
+                taskStatus[todayKey][task.name] = 'pending';
+            });
+            saveData();
+        }
+        
+        tasks.forEach(task => {
+            const taskItem = document.createElement('div');
+            taskItem.classList.add('task-item');
+            
+            const status = taskStatus[todayKey][task.name] || 'pending';
+            if (status === 'completed') {
+                taskItem.classList.add('completed');
+            } else if (status === 'failed') {
+                taskItem.classList.add('failed');
+            }
+            
+            taskItem.innerHTML = `
+                <div class="task-header">
+                    <div class="task-name">
+                        <span class="activity-type type-${task.type}">${task.type.charAt(0).toUpperCase() + task.type.slice(1)}</span>
+                        ${task.name}
+                        ${task.hasGratitude ? '<div class="gratitude-activity">🙏 Gratitude to Universe</div>' : ''}
+                        ${task.hasMoney ? '<div class="money-activity">💰 NO Extra Money Wastage</div>' : ''}
+                    </div>
+                    <div class="task-time">${task.time}</div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn btn-pass ${status === 'completed' ? 'active' : ''}" 
+                            onclick="markTask('${task.name}', 'completed')">
+                        <i class="fas fa-check"></i> Yes
+                    </button>
+                    <button class="btn btn-fail ${status === 'failed' ? 'active' : ''}" 
+                            onclick="markTask('${task.name}', 'failed')">
+                        <i class="fas fa-times"></i> No
+                    </button>
+                </div>
+            `;
+            
+            taskTracker.appendChild(taskItem);
+        });
+        
+        updateCompletionStatus();
+    }
+
+    // Mark a task as pass or fail
+    function markTask(taskName, status) {
+        const todayKey = today.toDateString();
+        taskStatus[todayKey][taskName] = status;
+        saveData();
+        renderTasks();
+    }
+
+    // Submit the day's progress
+    function submitDay() {
+        const todayKey = today.toDateString();
+        let allCompleted = true;
+        let anyFailed = false;
+        
+        for (const task in taskStatus[todayKey]) {
+            if (taskStatus[todayKey][task] === 'pending') {
+                allCompleted = false;
+                break;
+            }
+            if (taskStatus[todayKey][task] === 'failed') {
+                anyFailed = true;
+            }
+        }
+        
+        if (!allCompleted) {
+            alert('Please mark all tasks as Yes or No before submitting.');
+            return;
+        }
+        
+        calendarData[todayKey] = anyFailed ? 'failed' : 'completed';
+        
+        const message = anyFailed ? 
+            'Some tasks were not completed today. Keep going!' : 
+            'Excellent! All tasks completed successfully today!';
+        alert(`Today's progress submitted!\n\n${message}`);
+        
+        saveData();
+        updateStats();
+        updateCalendar();
+        updateCompletionStatus();
+    }
+
+    // Update statistics
+    function updateStats() {
+        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        document.getElementById('total-days').textContent = totalDays;
+        document.getElementById('total-days-progress').textContent = totalDays;
+        
+        let completedDays = 0;
+        for (const date in calendarData) {
+            if (calendarData[date] === 'completed' || calendarData[date] === 'failed') {
+                completedDays++;
+            }
+        }
+        
+        document.getElementById('days-completed').textContent = completedDays;
+        
+        const progressPercentage = Math.min(100, Math.max(0, (completedDays / totalDays) * 100));
+        document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
+        
+        const weekdayStudyHours = 8.75;
+        const weekendStudyHours = 12.75;
+        
+        let weekdaysCount = 0;
+        let weekendsCount = 0;
+        
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                weekendsCount++;
+            } else {
+                weekdaysCount++;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        const totalStudyHours = (weekdaysCount * weekdayStudyHours) + (weekendsCount * weekendStudyHours);
+        document.getElementById('total-hours').textContent = totalStudyHours.toFixed(1);
+    }
+
+    // Update calendar display
+    function updateCalendar() {
+        const calendar = document.getElementById('calendar');
+        calendar.innerHTML = '';
+        
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        daysOfWeek.forEach(day => {
+            const header = document.createElement('div');
+            header.classList.add('calendar-header');
+            header.textContent = day;
+            calendar.appendChild(header);
+        });
+        
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.classList.add('calendar-day', 'empty');
+            calendar.appendChild(emptyDay);
+        }
+        
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            const day = document.createElement('div');
+            day.classList.add('calendar-day');
+            day.textContent = i;
+            
+            const dateStr = new Date(currentYear, currentMonth, i).toDateString();
+            
+            if (calendarData[dateStr]) {
+                day.classList.add(calendarData[dateStr]);
+            } else if (new Date(currentYear, currentMonth, i) < today && 
+                      new Date(currentYear, currentMonth, i) >= startDate) {
+                day.classList.add('pending');
+            }
+            
+            calendar.appendChild(day);
+        }
+    }
+
+    // Initialize the app when page loads
+    window.onload = init;
+</script>
+
+</body>
+</html>
